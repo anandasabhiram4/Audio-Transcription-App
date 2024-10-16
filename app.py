@@ -1,14 +1,8 @@
 import os
 import streamlit as st
 import speech_recognition as sr
-from pydub import AudioSegment
+from moviepy.editor import AudioFileClip
 import tempfile
-
-# Set ffmpeg and ffprobe paths
-os.environ["PATH"] += os.pathsep + '/opt/homebrew/bin'
-AudioSegment.converter = "/opt/homebrew/bin/ffmpeg"
-AudioSegment.ffmpeg = "/opt/homebrew/bin/ffmpeg"
-AudioSegment.ffprobe = "/opt/homebrew/bin/ffprobe"
 
 # Function to transcribe audio
 def transcribe_audio(audio_file):
@@ -42,13 +36,13 @@ if uploaded_file is not None:
         temp_file.write(uploaded_file.getbuffer())
         temp_file_path = temp_file.name
 
-    # Convert to WAV if necessary
+    # Convert to WAV if necessary using moviepy
     audio_file_to_use = temp_file_path  # Default to the uploaded file path
     if uploaded_file.name.endswith('.mp3'):
         try:
-            audio = AudioSegment.from_mp3(temp_file_path)
+            audio = AudioFileClip(temp_file_path)
             temp_wav_path = temp_file_path.replace('.mp3', '.wav')
-            audio.export(temp_wav_path, format='wav')
+            audio.write_audiofile(temp_wav_path, codec='pcm_s16le')
             audio_file_to_use = temp_wav_path
             st.write("Converted MP3 to WAV format.")  # Debugging line
         except Exception as e:
